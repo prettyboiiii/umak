@@ -47,7 +47,7 @@ func main() {
 
 	c.Start()
 
-	endC := make(chan struct{})
-
-	<-endC
+	// Keep the main function running
+	// until the application is terminated
+	select {}
 }
