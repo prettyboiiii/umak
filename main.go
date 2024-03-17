@@ -30,7 +30,7 @@ func init() {
 func main() {
 	log.Println("Welcome to Umak!")
 	kamuObj := kamu.New()
-	c := cron.New()
+	c := cron.New(cron.WithLogger(cron.VerbosePrintfLogger(log.Default())))
 	for _, crontab := range CRON_TABS {
 		if _, err := c.AddFunc(crontab, func() {
 			if err := kamuObj.GetPlaceInQueue(DIARY_NUMBER); errors.Is(err, kamu.SeesionEndedErr) {
@@ -42,7 +42,6 @@ func main() {
 		}); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("Registered %s successfully\n", crontab)
 	}
 
 	c.Start()
@@ -50,4 +49,8 @@ func main() {
 	// Keep the main function running
 	// until the application is terminated
 	select {}
+}
+
+type logger struct {
+	log.Logger
 }
