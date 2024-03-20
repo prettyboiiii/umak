@@ -25,6 +25,7 @@ var (
 )
 
 type kamu struct {
+	logger               log.Logger
 	ConversationID       string
 	PlaceInQueueChoiceId string
 }
@@ -61,14 +62,14 @@ func (k *kamu) GetPlaceInQueue(diaryNumber string, retryCount uint8) error {
 			data.ID = ""
 			data.Value = diaryNumber
 			data.Type = requestTypeText
-			log.Printf("...Checking Diary number: %s ...\n", diaryNumber)
+			k.logger.Printf("...Checking Diary number: %s ...\n", diaryNumber)
 			resp, err := newRequest[conversationResponse](CHAT_API_PATH, http.MethodPost, data)
 			if err != nil {
 				return err
 			}
 			for _, element := range resp.Response.Elements {
 				if element.Payload.JSON != nil {
-					log.Println("The application status with this diary number is:", element.Payload.JSON.Data.CounterValue)
+					k.logger.Println("The application status with this diary number is:", element.Payload.JSON.Data.CounterValue)
 					return nil
 				}
 				if retryCount <= MAX_RETRY && strings.Contains(element.Payload.HTML, "Enter your diary number") {

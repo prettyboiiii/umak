@@ -33,6 +33,9 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/umak .
 
+# Copy the index.html file into the Docker image
+COPY pages/ /src/pages
+
 ################################################################################
 # Create a new stage for running the application that contains the minimal
 # runtime dependencies for the application. This often uses a different base
@@ -71,8 +74,12 @@ USER appuser
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/umak /bin/
 
+# Copy the index.html file from the "build" stage.
+COPY --from=build /src/pages/ /src/pages/
+WORKDIR /src
+
 # Expose the port that the application listens on.
-# EXPOSE 6900
+EXPOSE 6900
 
 # What the container should run when it is started.
 ENTRYPOINT [ "/bin/umak" ]

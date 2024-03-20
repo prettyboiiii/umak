@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Log Stream</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      header {
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        text-align: center;
+      }
+      #logContainer {
+        width: 80%;
+        margin: 20px auto;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow-y: scroll;
+        max-height: 70vh; /* Set maximum height to 70% of viewport height */
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: left;
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Umak</h1>
+    </header>
+    <div id="logContainer"></div>
+
+    <script>
+      // JavaScript for WebSocket handling remains the same
+      var socket = new WebSocket("/ws");
+      socket.onmessage = function (event) {
+        var logContainer = document.getElementById("logContainer");
+        var logEntry = document.createElement("div");
+        logEntry.textContent = "-> " + event.data;
+        logContainer.appendChild(logEntry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+      };
+      socket.onerror = function (error) {
+        console.error("WebSocket error:", error);
+      };
+      socket.onclose = function (event) {
+        console.log("WebSocket connection closed:", event);
+      };
+    </script>
+  </body>
+</html>

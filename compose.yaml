@@ -10,12 +10,13 @@
 services:
   umak:
     image: prettyboi/umak
-    container_name: server
+    container_name: umak
     build:
       context: .
       target: final
       dockerfile: Dockerfile
     env_file:
       - .env
-    # ports:
-    #   - 6900:6900
+    ports:
+      - 6900:6900
+    restart: unless-stopped
