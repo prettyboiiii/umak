@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -19,6 +21,7 @@ const (
 
 var (
 	SeesionEndedErr error = errors.New("conversation.ended")
+	MAX_RETRY       uint8 = 3
 )
 
 type kamu struct {
@@ -26,8 +29,17 @@ type kamu struct {
 	PlaceInQueueChoiceId string
 }
 
+func init() {
+	maxRetry, isFound := os.LookupEnv("MAX_RETRY")
+	if isFound {
+		if maxRetry, err := strconv.ParseUint(maxRetry, 10, 8); err == nil {
+			MAX_RETRY = uint8(maxRetry)
+		}
+	}
+}
+
 // GetPlaceInQueue implements Kamu.
-func (k *kamu) GetPlaceInQueue(diaryNumber string) error {
+func (k *kamu) GetPlaceInQueue(diaryNumber string, retryCount uint8) error {
 	if k.ConversationID == "" || k.PlaceInQueueChoiceId == "" {
 		if err := k.StartConversation(); err != nil {
 			return err
@@ -58,6 +70,9 @@ func (k *kamu) GetPlaceInQueue(diaryNumber string) error {
 				if element.Payload.JSON != nil {
 					log.Println("The application status with this diary number is:", element.Payload.JSON.Data.CounterValue)
 					return nil
+				}
+				if retryCount <= MAX_RETRY && strings.Contains(element.Payload.HTML, "Enter your diary number") {
+					return k.GetPlaceInQueue(diaryNumber, retryCount+1)
 				}
 			}
 		}

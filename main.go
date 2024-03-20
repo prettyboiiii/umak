@@ -33,9 +33,13 @@ func main() {
 	c := cron.New(cron.WithLogger(cron.VerbosePrintfLogger(log.Default())))
 	for _, crontab := range CRON_TABS {
 		if _, err := c.AddFunc(crontab, func() {
-			if err := kamuObj.GetPlaceInQueue(DIARY_NUMBER); errors.Is(err, kamu.SeesionEndedErr) {
-				kamuObj.StartConversation()
-				kamuObj.GetPlaceInQueue(DIARY_NUMBER)
+			if err := kamuObj.GetPlaceInQueue(DIARY_NUMBER, 0); errors.Is(err, kamu.SeesionEndedErr) {
+				if err := kamuObj.StartConversation(); err != nil {
+					log.Fatal(err)
+				}
+				if err := kamuObj.GetPlaceInQueue(DIARY_NUMBER, 0); err != nil {
+					log.Fatal(err)
+				}
 			} else if err != nil {
 				log.Fatal(err)
 			}
