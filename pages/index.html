@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Real-time Log Stream</title>
+    <title>Umak</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -29,21 +29,50 @@
         align-items: left;
         justify-content: flex-end;
       }
+      #clock {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
     <header>
       <h1>Umak</h1>
+      <div id="clock"></div>
     </header>
     <div id="logContainer"></div>
 
     <script>
+      function updateTime() {
+        var now = new Date();
+        var localTime = formatTime(now);
+        var utcTime = formatTime(now, true);
+        document.getElementById("clock").textContent =
+          "UTC Time: " + utcTime + " | Local Time: " + localTime;
+      }
+
+      function formatTime(date, isUTC) {
+        var hours = (isUTC ? date.getUTCHours() : date.getHours())
+          .toString()
+          .padStart(2, "0");
+        var minutes = (isUTC ? date.getUTCMinutes() : date.getMinutes())
+          .toString()
+          .padStart(2, "0");
+        var seconds = (isUTC ? date.getUTCSeconds() : date.getSeconds())
+          .toString()
+          .padStart(2, "0");
+        return hours + ":" + minutes + ":" + seconds;
+      }
+
+      // Update time every second
+      setInterval(updateTime, 1000);
+
       // JavaScript for WebSocket handling remains the same
       var socket = new WebSocket("/ws");
       socket.onmessage = function (event) {
         var logContainer = document.getElementById("logContainer");
         var logEntry = document.createElement("div");
-        logEntry.textContent = "-> " + event.data;
+        logEntry.textContent = event.data;
         logContainer.appendChild(logEntry);
         logContainer.scrollTop = logContainer.scrollHeight;
       };
