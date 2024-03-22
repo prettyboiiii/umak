@@ -25,7 +25,7 @@ var (
 )
 
 type kamu struct {
-	logger               log.Logger
+	logger               *log.Logger
 	ConversationID       string
 	PlaceInQueueChoiceId string
 }
@@ -115,8 +115,8 @@ func (k *kamu) StartConversation() error {
 	return nil
 }
 
-func New() Kamu {
-	return &kamu{}
+func New(logger *log.Logger) Kamu {
+	return &kamu{logger: logger}
 }
 
 func newRequest[R any](

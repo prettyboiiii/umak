@@ -31,10 +31,15 @@ type logStore struct{}
 func (ls *logStore) Write(p []byte) (n int, err error) {
 	logStoreMu.Lock()
 	defer logStoreMu.Unlock()
+	if len(p) == 0 {
+		return 0, nil
+	}
 	log.Print(string(p))
 	logs = append(logs, string(p))
 	for conn := range clients {
-		conn.WriteMessage(websocket.TextMessage, p)
+		if err := conn.WriteMessage(websocket.TextMessage, p); err != nil {
+			return 0, err
+		}
 	}
 	return len(p), nil
 }
@@ -54,7 +59,7 @@ func init() {
 func main() {
 	logger.Println("Welcome to Umak!")
 
-	kamuObj := kamu.New()
+	kamuObj := kamu.New(logger)
 	c := cron.New(cron.WithLogger(cron.VerbosePrintfLogger(logger)))
 	for _, crontab := range CRON_TABS {
 		if _, err := c.AddFunc(crontab, func() {
